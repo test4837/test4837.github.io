@@ -1,5 +1,5 @@
 ---
-title: 国际漫游在中国也有墙,我如何看.
+title: 我如何看待中国对于国际漫游仍存在审查政策?
 date: 2026-09-05
 ---
 ![Roaming](/images/roaming.jpg)
