@@ -218,6 +218,8 @@ HTTP/2/TCP 连接在 TLS 握手阶段遭到 `Connection reset by peer`，而 HTT
 
 因此，**“使用境外 SIM 卡 + 获得境外 IP”并不能简单等同于“完全绕过中国网络侧的过滤”。**
 
+---
+
 
 ## 参考资料
 
