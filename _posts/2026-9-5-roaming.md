@@ -34,6 +34,32 @@ DPI（深度包检测）的拦截： 部署在出口网关的防火墙（GFW）�
 
 被屏蔽的网站有
 法轮功系列,博讯网,国际特赦组织等.
+---------------------
+境外卡漫游到中国带墙的测试
+（以下测试是CSL/Singtel 漫游到中国联通/电信的测试。）
 
+curl -Iv --http2 --doh-url https://1.1.1.1/dns-query https://www.epochtimes.com
+* Host www.epochtimes.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 130.211.7.151
+*   Trying 130.211.7.151:443...
+* ALPN: curl offers h2,http/1.1
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* Recv failure: Connection reset by peer
+* TLS connect error: error:00000000:lib(0)::reason(0)
+* OpenSSL SSL_connect: Connection reset by peer in connection to www.epochtimes.com:443
+* closing connection #0
+curl: (35) Recv failure: Connection reset by peer
+
+~ $ curl -Iv --http3-only --doh-url https://1.1.1.1/dns-query https://www.epochtimes.com
+* Host www.epochtimes.com:443 was resolved.
+* IPv6: (none)
+* IPv4: 130.211.7.151
+*   Trying 130.211.7.151:443..
+> HEAD / HTTP/3
+> Host: www.epochtimes.com
+< HTTP/3 200
+HTTP/3 200
+-----------------------
 部分灵感引用来源
 V2EX (https://v2ex.com/t/832129) Twitter (https://x.com/realNyarime/status/2034692544358228138?lang=zh)
