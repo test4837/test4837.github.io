@@ -148,14 +148,23 @@ TLS ClientHello
 
 ---------------------
 
-境外卡漫游到中国带墙的测试
-（以下测试是CSL/Singtel 漫游到中国联通/电信的测试。）
+# 境外卡漫游到中国带墙的测试
 
+> 以下测试为 **CSL / Singtel** 漫游至中国联通 / 中国电信网络时进行的测试。
+
+## 测试一：HTTP/2
+
+```bash
 curl -Iv --http2 --doh-url https://1.1.1.1/dns-query https://www.epochtimes.com
+```
+
+测试结果：
+
+```text
 * Host www.epochtimes.com:443 was resolved.
 * IPv6: (none)
 * IPv4: 130.211.7.151
-*   Trying 130.211.7.151:443...
+* Trying 130.211.7.151:443...
 * ALPN: curl offers h2,http/1.1
 * TLSv1.3 (OUT), TLS handshake, Client hello (1):
 * Recv failure: Connection reset by peer
@@ -163,22 +172,60 @@ curl -Iv --http2 --doh-url https://1.1.1.1/dns-query https://www.epochtimes.com
 * OpenSSL SSL_connect: Connection reset by peer in connection to www.epochtimes.com:443
 * closing connection #0
 curl: (35) Recv failure: Connection reset by peer
+```
 
-~ $ curl -Iv --http3-only --doh-url https://1.1.1.1/dns-query https://www.epochtimes.com
+可以看到，DNS 解析正常获得了 `130.211.7.151`，但在 TLS ClientHello 发出后，连接立即遭到重置。
+
+---
+
+## 测试二：HTTP/3
+
+使用相同的 DoH 设置，但强制使用 HTTP/3：
+
+```bash
+curl -Iv --http3-only --doh-url https://1.1.1.1/dns-query https://www.epochtimes.com
+```
+
+结果：
+
+```text
 * Host www.epochtimes.com:443 was resolved.
 * IPv6: (none)
 * IPv4: 130.211.7.151
-*   Trying 130.211.7.151:443..
+* Trying 130.211.7.151:443...
 > HEAD / HTTP/3
 > Host: www.epochtimes.com
-HTTP/3 200
+< HTTP/3 200
+```
 
---------------------
+HTTP/2/TCP 连接在 TLS 握手阶段遭到 `Connection reset by peer`，而 HTTP/3/QUIC 则能够正常获得 `HTTP/3 200`。
 
-部分灵感引用来源
-V2EX: https://v2ex.com/t/832129
-Twitter: https://x.com/realNyarime/status/2034692544358228138?lang=zh
+这一结果说明，**针对 TCP/TLS 连接的干预与基于 QUIC 的 HTTP/3 连接表现出了明显差异。**
 
---------------------
-维基百科的"中华人民共和国被封锁网站列表"也注明了
-"现时，中国之外的SIM卡漫游到中国会采取不同的封锁策略。会屏蔽一些有关法轮功网站和部分新闻网站。"
+
+---
+
+## 测试结论
+
+本次测试显示，境外 SIM 卡在中国大陆进行 4G/5G 数据漫游时，并不意味着所有境外网站都能够绕过中国网络侧的流量干预。
+
+在本次测试中：
+
+* DNS 通过 Cloudflare DoH 正常解析；
+* `www.epochtimes.com` 可正常解析至 `130.211.7.151`；
+* TCP + TLS/HTTP2 连接在 TLS ClientHello 阶段被重置；
+* HTTP/3/QUIC 连接则能够正常建立并返回 `HTTP/3 200`。
+
+因此，**“使用境外 SIM 卡 + 获得境外 IP”并不能简单等同于“完全绕过中国网络侧的过滤”。**
+
+
+## 参考资料
+
+部分测试思路及相关讨论参考：
+
+* [V2EX：关于相关网络封锁与漫游的讨论](https://v2ex.com/t/832129)
+* [Twitter / X：相关测试讨论](https://x.com/realNyarime/status/2034692544358228138?lang=zh)
+* [维基百科：中华人民共和国被封锁网站列表](https://zh.wikipedia.org/zh-cn/中华人民共和国被封锁网站列表)
+
+维基百科相关条目亦提到，**中国境外的 SIM 卡漫游到中国后，可能采取与境内 SIM 卡不同的封锁策略**，包括对部分法轮功相关网站及部分新闻网站进行屏蔽。
+
